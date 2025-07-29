@@ -1,6 +1,7 @@
 # Import python packages
 import streamlit as st
 from snowflake.snowpark.functions import col
+import requests
 
 # Write directly to the app
 st.title(f":cup_with_straw: Customize your smoothie! :cup_with_straw: ")
@@ -8,15 +9,6 @@ st.write(
   """Choose the fruits you want in your smoothie!
   """
 )
-
-# option = st.selectbox(
-#     "What is your favorite fruit",
-#     ("Banana", "Strawberries", "Peaches"),
-# )
-
-# st.write("You selected:", option)
-
-
 
 name_on_order = st.text_input('Name on smoothie: ')
 st.write('The name on your smoothie will be: ', name_on_order)
@@ -38,6 +30,8 @@ if ingredient_list:
     ingredient_string = ''
     for fruit_chosen in ingredient_list:
         ingredient_string += fruit_chosen + ' '  
+        smoothiefroot_response = requests.get("https://fruityvice.com/api/fruit/banana")
+        st_df = st.dataframe(data = smoothiefroot_response.json(), use_container_width = True)       
 
     my_insert_stmt = """ insert into smoothies.public.orders(ingredients, name_on_order)
             values ('""" + ingredient_string + """', '""" + name_on_order + """')"""
@@ -45,12 +39,7 @@ if ingredient_list:
     if time_to_insert:
         session.sql(my_insert_stmt).collect()
         st.success('Your Smoothie is ordered!', icon="✅")
-
-# New section to display smoothiefroot nutrition information
-import requests
-smoothiefroot_response = requests.get("https://fruityvice.com/api/fruit/banana")
-# st.text(smoothiefroot_response.json())
-st_df = st.dataframe(data = smoothiefroot_response.json(), use_container_width = True)       
+  
 
 
 
